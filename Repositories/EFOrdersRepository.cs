@@ -6,9 +6,9 @@ namespace CSharpOrders.Repositories;
 
 public class EFOrdersRepository : IOrdersRepository
 {
-    private readonly OrdersContext dbContext;
+    private readonly ProjectContext dbContext;
 
-    public EFOrdersRepository(OrdersContext dbContext)
+    public EFOrdersRepository(ProjectContext dbContext)
     {
         this.dbContext = dbContext;
     }
