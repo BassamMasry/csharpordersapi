@@ -8,5 +8,6 @@ public interface IProviderRepository
     void Delete(int id);
     Provider? Update(Provider provider);
     Provider? Get(int id);
+    IEnumerable<Provider> GetWithParameters(IQueryCollection parameters);
     IEnumerable<Provider> GetAll();
 }

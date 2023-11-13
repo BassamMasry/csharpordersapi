@@ -8,5 +8,6 @@ public interface IOrdersRepository
     void Delete(int id);
     Order? Update(Order order);
     Order? Get(int id);
+    IEnumerable<Order> GetWithParameters(IQueryCollection parameters);
     IEnumerable<Order> GetAll();
 }

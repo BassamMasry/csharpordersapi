@@ -35,6 +35,34 @@ public class EFOrdersRepository : IOrdersRepository
         return dbContext.Orders.AsNoTracking().ToList();
     }
 
+    public IEnumerable<Order> GetWithParameters(IQueryCollection parameters)
+    {
+        string number = parameters["number"].ToString();
+        string date = parameters["date"].ToString();
+        string providerId = parameters["providerId"].ToString();
+
+        IQueryable<Order> query = dbContext.Orders;
+
+        if (!string.IsNullOrWhiteSpace(number))
+        {
+            query = query.Where(order => order.Number.Contains(number));
+        }
+        if (!string.IsNullOrWhiteSpace(date))
+        {
+            try
+            {
+                var queryDate = DateTime.Parse(date);
+                query = query.Where(order => order.Date.CompareTo(queryDate) == 0);
+            }
+            catch (System.FormatException){;}
+        }
+        if (!string.IsNullOrWhiteSpace(providerId)){
+            query = query.Where(order => order.ProviderId == int.Parse(providerId));
+        }
+
+        return query.ToList();
+    }
+
     public Order? Update(Order order)
     {
         dbContext.Orders.Update(order);

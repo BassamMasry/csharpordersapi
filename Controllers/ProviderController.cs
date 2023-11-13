@@ -27,7 +27,13 @@ public class ProviderController : ControllerBase
     [HttpGet(Name = "GetProvider")]
     public IEnumerable<Provider> Get()
     {
-        return _providerRepository.GetAll();
+        if (HttpContext.Request.Query.Count == 0)
+        {
+            return _providerRepository.GetAll();
+        } else
+        {
+            return _providerRepository.GetWithParameters(HttpContext.Request.Query);
+        }
     }
 
     [HttpGet("{id}", Name = "GetProviderById")]

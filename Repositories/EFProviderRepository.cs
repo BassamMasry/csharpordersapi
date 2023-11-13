@@ -35,6 +35,20 @@ public class EFProviderRepository : IProviderRepository
         return dbContext.Providers.AsNoTracking().ToList();
     }
 
+    public IEnumerable<Provider> GetWithParameters(IQueryCollection parameters)
+    {
+        string name = parameters["name"].ToString();
+
+        IQueryable<Provider> query = dbContext.Providers;
+
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            query = query.Where(provider => provider.Name.Contains(name));
+        }
+        
+        return query.ToList();
+    }
+
     public Provider? Update(Provider provider)
     {
         dbContext.Providers.Update(provider);

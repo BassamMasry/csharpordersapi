@@ -28,7 +28,13 @@ public class OrderController : ControllerBase
     [HttpGet(Name = "GetOrder")]
     public IEnumerable<Order> Get()
     {
-        return _ordersRepository.GetAll();
+        if (HttpContext.Request.Query.Count == 0)
+        {
+            return _ordersRepository.GetAll();
+        } else
+        {
+            return _ordersRepository.GetWithParameters(HttpContext.Request.Query);
+        }
     }
 
     [HttpGet("{id}", Name = "GetOrderById")]
