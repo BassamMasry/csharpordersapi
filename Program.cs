@@ -18,6 +18,7 @@ var DBConnectionString = builder.Configuration.GetConnectionString("ProjectConte
 builder.Services.AddDbContext<ProjectContext>(options => options.UseMySQL(DBConnectionString));
 
 builder.Services.AddScoped<IOrdersRepository, EFOrdersRepository>();
+builder.Services.AddScoped<IOrderItemsRepository, EFOrderItemsRepository>();
 builder.Services.AddScoped<IProviderRepository, EFProviderRepository>();
 
 var app = builder.Build();

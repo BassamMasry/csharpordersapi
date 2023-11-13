@@ -12,6 +12,7 @@ public class ProjectContext : DbContext
     }
 
     public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<Provider> Providers => Set<Provider>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
