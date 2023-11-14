@@ -38,7 +38,8 @@ public class EFOrdersRepository : IOrdersRepository
     public IEnumerable<Order> GetWithParameters(IQueryCollection parameters)
     {
         string number = parameters["number"].ToString();
-        string date = parameters["date"].ToString();
+        string startDate = parameters["startDate"].ToString();
+        string endDate = parameters["endDate"].ToString();
         string providerId = parameters["providerId"].ToString();
 
         IQueryable<Order> query = dbContext.Orders;
@@ -47,12 +48,24 @@ public class EFOrdersRepository : IOrdersRepository
         {
             query = query.Where(order => order.Number.Contains(number));
         }
-        if (!string.IsNullOrWhiteSpace(date))
+        if (!string.IsNullOrWhiteSpace(startDate))
         {
             try
             {
-                var queryDate = DateTime.Parse(date);
-                query = query.Where(order => order.Date.CompareTo(queryDate) == 0);
+                var queryDate = DateTime.Parse(startDate);
+                query = query.Where(order => order.Date.CompareTo(queryDate) >= 0);
+            }
+            catch (System.FormatException){;}
+        } else
+        {
+            query = query.Where(order => order.Date.CompareTo(DateTime.Now.AddDays(-30)) > 0);
+        }
+        if (!string.IsNullOrWhiteSpace(endDate))
+        {
+            try
+            {
+                var queryDate = DateTime.Parse(endDate);
+                query = query.Where(order => order.Date.CompareTo(queryDate) <= 0);
             }
             catch (System.FormatException){;}
         }

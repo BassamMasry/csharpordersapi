@@ -1,5 +1,7 @@
+using System.Globalization;
 using CSharpOrders.Data;
 using CSharpOrders.Repositories;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +30,19 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ProjectContext>();
     dbContext.Database.Migrate();
 }
+
+var supportedCultures = new[]
+{
+ new CultureInfo("ru-RU"),
+};
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("ru-RU"),
+    // Formatting numbers, dates, etc.
+    SupportedCultures = supportedCultures,
+    // UI strings that we have localized.
+    SupportedUICultures = supportedCultures
+});
 
 // Configure the HTTP request pipeline.
 // if (app.Environment.IsDevelopment())
