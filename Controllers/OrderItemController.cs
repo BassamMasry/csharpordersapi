@@ -58,6 +58,11 @@ public class OrderItemController : ControllerBase
                 ModelState.AddModelError("orderId", "That order does not exist");
                 return BadRequest(ModelState);
             }
+            if (orderItem.Name == orderItem.Order.Number)
+            {
+                ModelState.AddModelError("name", "The orderItem name cannot be equal to the order number");
+                return BadRequest(ModelState);
+            }
             orderItem.Id = 0;
             _orderItemsRepository.Create(orderItem);
             return CreatedAtAction(nameof(GetById), new { id = orderItem.Id }, orderItem);
