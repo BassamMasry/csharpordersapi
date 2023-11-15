@@ -1,3 +1,4 @@
+using System.Collections;
 using CSharpOrders.Data;
 using CSharpOrders.Models;
 using Microsoft.EntityFrameworkCore;
@@ -35,10 +36,20 @@ public class EFOrderItemsRepository : IOrderItemsRepository
         return dbContext.OrderItems.AsNoTracking().ToList();
     }
 
+    public ArrayList GetFilters()
+    {
+        return new ArrayList
+        {
+            dbContext.OrderItems.Select(orderItem => orderItem.Name).Distinct().ToList(),
+            dbContext.OrderItems.Select(orderItem => orderItem.Unit).Distinct().ToList()
+        };
+    }
+
     public IEnumerable<OrderItem> GetWithParameters(IQueryCollection parameters)
     {
         string name = parameters["name"].ToString();
         string unit = parameters["unit"].ToString();
+        string orderId = parameters["orderId"].ToString();
 
         IQueryable<OrderItem> query = dbContext.OrderItems;
 
@@ -49,6 +60,10 @@ public class EFOrderItemsRepository : IOrderItemsRepository
         if (!string.IsNullOrWhiteSpace(unit))
         {
             query = query.Where(orderItem => orderItem.Unit.Contains(unit));
+        }
+        if (!string.IsNullOrWhiteSpace(orderId))
+        {
+            query = query.Where(orderItem => orderItem.OrderId == int.Parse(orderId));
         }
 
         return query.ToList();

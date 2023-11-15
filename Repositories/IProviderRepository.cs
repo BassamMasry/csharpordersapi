@@ -1,3 +1,4 @@
+using System.Collections;
 using CSharpOrders.Models;
 
 namespace CSharpOrders.Repositories;
@@ -10,4 +11,5 @@ public interface IProviderRepository
     Provider? Get(int id);
     IEnumerable<Provider> GetWithParameters(IQueryCollection parameters);
     IEnumerable<Provider> GetAll();
+    ArrayList GetFilters();
 }

@@ -1,3 +1,4 @@
+using System.Collections;
 using CSharpOrders.Data;
 using CSharpOrders.Models;
 using Microsoft.EntityFrameworkCore;
@@ -35,18 +36,27 @@ public class EFOrdersRepository : IOrdersRepository
         return dbContext.Orders.AsNoTracking().ToList();
     }
 
+    public ArrayList GetFilters()
+    {
+        return new ArrayList
+        {
+            dbContext.Orders.Where(order => order.Date.CompareTo(DateTime.Now.AddDays(-30)) > 0).Select(order => order.Number).Distinct().ToList(),
+            dbContext.Orders.Where(order => order.Date.CompareTo(DateTime.Now.AddDays(-30)) > 0).Select(order => order.ProviderId).Distinct().ToList()
+        };
+    }
+
     public IEnumerable<Order> GetWithParameters(IQueryCollection parameters)
     {
-        string number = parameters["number"].ToString();
-        string startDate = parameters["startDate"].ToString();
-        string endDate = parameters["endDate"].ToString();
-        string providerId = parameters["providerId"].ToString();
+        var number = parameters["number"].AsEnumerable();
+        var startDate = parameters["startDate"].ToString();
+        var endDate = parameters["endDate"].ToString();
+        var providerId = parameters["providerId"].AsEnumerable();
 
         IQueryable<Order> query = dbContext.Orders;
 
-        if (!string.IsNullOrWhiteSpace(number))
+        if (number is not null && number.Any())
         {
-            query = query.Where(order => order.Number.Contains(number));
+            query = query.Where(order => number.Contains(order.Number));
         }
         if (!string.IsNullOrWhiteSpace(startDate))
         {
@@ -69,8 +79,8 @@ public class EFOrdersRepository : IOrdersRepository
             }
             catch (System.FormatException){;}
         }
-        if (!string.IsNullOrWhiteSpace(providerId)){
-            query = query.Where(order => order.ProviderId == int.Parse(providerId));
+        if (providerId is not null && providerId.Any()){
+            query = query.Where(order => providerId.Contains(order.ProviderId.ToString()));
         }
 
         return query.ToList();

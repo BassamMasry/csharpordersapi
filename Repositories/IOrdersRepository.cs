@@ -1,3 +1,4 @@
+using System.Collections;
 using CSharpOrders.Models;
 
 namespace CSharpOrders.Repositories;
@@ -10,4 +11,5 @@ public interface IOrdersRepository
     Order? Get(int id);
     IEnumerable<Order> GetWithParameters(IQueryCollection parameters);
     IEnumerable<Order> GetAll();
+    ArrayList GetFilters();
 }

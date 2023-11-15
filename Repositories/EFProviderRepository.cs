@@ -1,3 +1,4 @@
+using System.Collections;
 using CSharpOrders.Data;
 using CSharpOrders.Models;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,11 @@ public class EFProviderRepository : IProviderRepository
     public IEnumerable<Provider> GetAll()
     {
         return dbContext.Providers.AsNoTracking().ToList();
+    }
+
+    public ArrayList GetFilters()
+    {
+        return new ArrayList{dbContext.Providers.Select(provider => provider.Name).Distinct()};
     }
 
     public IEnumerable<Provider> GetWithParameters(IQueryCollection parameters)

@@ -91,7 +91,6 @@ public class OrderItemController : ControllerBase
     }
 
     [HttpDelete("{id}", Name = "DeleteOrderItem")]
-    [Consumes("multipart/form-data")]
     public ActionResult<OrderItem> Delete(int id)
     {
         if (ModelState.IsValid)

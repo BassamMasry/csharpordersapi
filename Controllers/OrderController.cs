@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using CSharpOrders.Models;
 using CSharpOrders.Repositories;
-using Microsoft.VisualBasic;
 
 namespace CSharpOrders.Controllers;
 
@@ -101,7 +100,6 @@ public class OrderController : ControllerBase
     }
 
     [HttpDelete("{id}", Name = "DeleteOrder")]
-    [Consumes("multipart/form-data")]
     public ActionResult<Order> Delete(int id)
     {
         if (ModelState.IsValid)

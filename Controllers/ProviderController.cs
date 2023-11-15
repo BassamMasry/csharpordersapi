@@ -75,7 +75,6 @@ public class ProviderController : ControllerBase
     }
 
     [HttpDelete("{id}", Name = "DeleteProvider")]
-    [Consumes("multipart/form-data")]
     public ActionResult<Provider> Delete(int id)
     {
         if (ModelState.IsValid)
