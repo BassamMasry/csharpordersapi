@@ -1,0 +1,112 @@
+@page
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="/js/petite-vue.js"></script>
+</head>
+<body>
+  <div class="row justify-content-center mt-5">
+    <div class="col-2">
+      <a href="/order/add/" class="btn btn-primary mx-auto">Добавить заказ</a>
+    </div>
+  </div>
+  <div class="row justify-content-center mt-5">
+    <div class="col-3" v-scope="Form()" @@vue:mounted="mounted"></div>
+  </div>
+  <div class="row justify-content-center mt-5">
+    <div class="col-3" v-scope="OrdersTable()" @@vue:mounted="mounted"></div>
+  </div>
+    
+  <template id="form_template">
+    <form action="" method="get">
+      <label class="mt-3" for="start">Дата начала:</label>
+      <input class="form-control" type="date" id="start" name="startDate" min="2018-01-01" max="2024-12-31" />
+      <label class="mt-3" for="end">Дата окончания:</label>
+      <input class="form-control" type="date" id="end" name="endDate" min="2018-01-01" max="2024-12-31" />
+      
+      <div v-if="loading">Загрузка...</div>
+      <div v-if="formData">
+        <label class="mt-3" for="providerSelect">ProviderId</label>
+        <select multiple class="form-select" name="providerId" id="providerSelect">
+          <option v-for="val in formData[1]" :value="val">{{val}}</option>
+        </select>
+
+        <label class="mt-3" for="numberSelect">Номер</label>
+        <select multiple class="form-select" name="number" id="numberSelect">
+          <option v-for="val in formData[0]" :value="val">{{val}}</option>
+        </select>
+      </div>
+
+      <input class="form-control mt-3" type="submit" value="Принять">
+    </form>
+  </template>
+
+  <template id="ordersTable_template">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Номер</th>
+          <th scope="col">Дата</th>
+          <th scope="col">Provider id</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="row in tableData" :key="row.id" @@click="window.location.href= '/order/'+ row.id;">
+          <td>{{row.number}}</td>
+          <td>{{row.date}}</td>
+          <td>{{row.providerId}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </template>
+
+  <script>
+    function Form() {
+      return {
+        $template: '#form_template',
+        loading: false,
+        formData: null,
+
+        mounted() {
+          this.formData = null
+          this.loading = true
+          const xhr=new XMLHttpRequest;xhr.onreadystatechange=()=>{
+            if(xhr.readyState===4){
+              this.loading=false;
+              this.formData = JSON.parse(xhr.response)
+            }
+          };
+          xhr.open("GET",'/api/filters/orders/',true);
+          xhr.send("");
+        }
+      }
+    }
+    function OrdersTable() {
+      return {
+        $template: '#ordersTable_template',
+        loading: false,
+        tableData: null,
+
+        mounted() {
+          this.tableData = null
+          this.loading = true
+          const xhr=new XMLHttpRequest;xhr.onreadystatechange=()=>{
+            if(xhr.readyState===4){
+              this.loading=false;
+              this.tableData = JSON.parse(xhr.response)
+            }
+          };
+          xhr.open("GET",'/api/order/'+window.location.search,true);
+          xhr.send("");
+        }
+      }
+    }
+    PetiteVue.createApp({ Form, OrdersTable }).mount()
+  </script>
+</body>
+</html>

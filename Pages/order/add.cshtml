@@ -1,0 +1,133 @@
+@page
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добавить</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="/js/petite-vue.js"></script>
+</head>
+<body>
+  <div class="row justify-content-center mt-5">
+    <div class="col-3" v-scope="Form()"></div>
+  </div>
+    
+  <template id="form_template">
+    <form @@submit="onSubmit">
+      <div>
+        <label class="mt-3" for="number">Номер</label>
+        <input class="form-control" v-model="order.Number" type="text" name="number" id="number">
+        
+        <label class="mt-3" for="date">Дата</label>
+        <input class="form-control" v-model="order.Date" type="date" name="date" id="date">
+        
+        <label class="mt-3" for="providerId">provider Id</label>
+        <input class="form-control" v-model="order.ProviderId" type="text" name="providerId" id="providerId">
+        
+        <div v-for="(orderItem, counter) in orderItems" v-bind:key="counter">
+          <label>Название</label>
+          <input class="form-control" v-model="orderItem.Name" type="text" name="number" id="number">
+
+          <label>Количество</label>
+          <input class="form-control" v-model="orderItem.Quantity" type="text" name="quantity" id="quantity">
+
+          <label>Единица</label>
+          <input class="form-control" v-model="orderItem.Unit" type="text" name="unit" id="unit">
+
+          
+          <input class="form-control mt-3" type="button" @@click="deleteOrderItem(counter)" value="Удалить предмет заказа">
+        </div>
+        <input class="form-control mt-5" type="button" @@click="addOrderItem()" value="Добавить предмет заказа">
+      </div>
+
+      <input class="form-control mt-3" type="submit" value="Добавить">
+    </form>
+  </template>
+
+  <script>
+    function Form() {
+      return {
+        $template: '#form_template',
+        loading: false,
+        order: {Number: "", Date: "", ProviderId: ""},
+        orderItems: [{Name: "", Quantity: "", Unit: ""}],
+
+        addOrderItem() {
+          this.orderItems.push({
+            Name: "",
+            Quantity: "",
+            Unit: ""
+          })
+        },
+
+        deleteOrderItem(counter) {
+          this.orderItems.splice(counter, 1);
+        },
+
+        onSubmit(e) {
+          e.preventDefault()
+          Object.keys(this.order).forEach((k) => {
+            if(!this.order[k]) {
+              alert(k + " не может быть пустым")
+              return null
+            }
+          });
+          for (const orderitem of this.orderItems) {
+            Object.keys(orderitem).forEach((k) => {
+              if(!orderitem[k]) {
+                alert(k + " не может быть пустым")
+                return null
+              }
+            });
+          }
+
+          var formData = new FormData();
+
+          formData.append("Number", this.order.Number);
+          formData.append("Date", this.order.Date);
+          formData.append("ProviderId", this.order.ProviderId);
+
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", "/api/order/", true);
+          const self = this;
+          xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              const orderId = JSON.parse(xhr.responseText).id;
+              for (const orderitem of self.orderItems) {
+                var formDataInternal = new FormData();
+
+                formDataInternal.append("Name", orderitem.Name);
+                formDataInternal.append("Quantity", orderitem.Quantity);
+                formDataInternal.append("Unit", orderitem.Unit);
+                formDataInternal.append("orderId", orderId);
+                var xhrInternal = new XMLHttpRequest();
+                xhrInternal.open("POST", "/api/orderitem/", true);
+                xhrInternal.onload = function () {
+                  if (xhrInternal.status >= 200 && xhrInternal.status < 300) {
+                    console.log("Request successful");
+                    console.log(xhrInternal.responseText);
+                  } else {
+                    console.error("Request failed with status", xhrInternal.status);
+                  }
+                }
+                xhrInternal.send(formDataInternal);
+              }
+              console.log("Request successful");
+              console.log(xhr.responseText);
+              window.location.href= '/';
+            } else {
+              alert("Не удалось создать заказ")
+              console.error("Request failed with status", xhr.status);
+            }
+          };
+
+          xhr.send(formData);
+        },
+      }
+    }
+    PetiteVue.createApp({ Form }).mount()
+  </script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+@page "/order/{id:int}/edit"
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактировать</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="/js/petite-vue.js"></script>
+</head>
+<body>
+  <div class="row justify-content-center mt-5">
+    <div class="col-3" v-scope="Form()" @@vue:mounted="mounted"></div>
+  </div>
+    
+  <template id="form_template">
+    <form @@submit="onSubmit">
+      <div>
+        <label class="mt-3" for="number">Номер</label>
+        <input class="form-control" v-model="order.number" type="text" name="number" id="number">
+        
+        <label class="mt-3" for="date">Дата</label>
+        <input class="form-control" v-model="order.date" type="date" name="date" id="date">
+        
+        <label class="mt-3" for="providerId">provider Id</label>
+        <input class="form-control" v-model="order.providerId" type="text" name="providerId" id="providerId">
+        
+        <div v-for="(orderItem, counter) in orderItems" v-bind:key="counter">
+          <label>Название</label>
+          <input class="form-control" v-model="orderItem.name" type="text" name="number" id="number">
+
+          <label>Количество</label>
+          <input class="form-control" v-model="orderItem.quantity" type="text" name="quantity" id="quantity">
+
+          <label>Единица</label>
+          <input class="form-control" v-model="orderItem.unit" type="text" name="unit" id="unit">
+
+          
+          <input class="form-control mt-3" type="button" @@click="deleteOrderItem(counter)" value="Удалить предмет заказа">
+        </div>
+        <input class="form-control mt-5" type="button" @@click="addOrderItem()" value="Добавить предмет заказа">
+      </div>
+
+      <input class="form-control mt-3" type="submit" value="Добавить">
+    </form>
+  </template>
+
+  <script>
+    function Form() {
+      return {
+        $template: '#form_template',
+        loading: false,
+        order: {number: "", date: "", providerId: ""},
+        orderItems: [{name: "", quantity: "", unit: "", orderId: ""}],
+        
+
+        addOrderItem() {
+          this.orderItems.push({
+            name: "",
+            quantity: "",
+            unit: ""
+          })
+        },
+
+        deleteOrderItem(counter) {
+          this.orderItems.splice(counter, 1);
+        },
+
+        mounted() {
+          this.loading = true
+          const xhr=new XMLHttpRequest;xhr.onreadystatechange=()=>{
+            if(xhr.readyState===4){
+              this.loading=false;
+              this.order = JSON.parse(xhr.response);
+              console.log(this.order);
+            }
+          };
+          xhr.open("GET",'/api/order/@RouteData.Values["id"]',true);
+          xhr.send("");
+          
+          const xhr2=new XMLHttpRequest;xhr2.onreadystatechange=()=>{
+            if(xhr2.readyState===4){
+              this.loading=false;
+              this.orderItems = JSON.parse(xhr2.response)
+              console.log(this.orderItems)
+            }
+          };
+          xhr2.open("GET",'/api/orderItem/?orderId=@RouteData.Values["id"]',true);
+          xhr2.send("");
+        },
+
+        onSubmit(e) {
+          e.preventDefault()
+          const orderKeys = {number: "", date:"", providerId: ""};
+          const orderItemKeys = {name: "", quantity: "", unit: "", orderId: ""};
+          Object.keys(orderKeys).forEach((k) => {
+            if(!this.order[k]) {
+              alert(k + " не может быть пустым")
+              return null
+            }
+          });
+          for (const orderitem of this.orderItems) {
+            Object.keys(orderItemKeys).forEach((k) => {
+              if(!orderitem[k]) {
+                alert(k + " не может быть пустым")
+                return null
+              }
+            });
+          }
+
+          var formData = new FormData();
+
+          formData.append("Number", this.order.number);
+          formData.append("Date", this.order.date);
+          formData.append("ProviderId", this.order.providerId);
+
+          var xhr = new XMLHttpRequest();
+          xhr.open("PUT", "/api/order/@RouteData.Values["id"]", true);
+          const self = this;
+          xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              for (const orderitem of self.orderItems) {
+                var formDataInternal = new FormData();
+
+                formDataInternal.append("Name", orderitem.name);
+                formDataInternal.append("Quantity", orderitem.quantity);
+                formDataInternal.append("Unit", orderitem.unit);
+                formDataInternal.append("orderId", @RouteData.Values["id"]);
+                var xhrInternal = new XMLHttpRequest();
+                xhrInternal.open("PUT", "/api/orderitem/" + orderitem.id, true);
+                xhrInternal.onload = function () {
+                  if (xhrInternal.status >= 200 && xhrInternal.status < 300) {
+                    console.log("Request successful");
+                    console.log(xhrInternal.responseText);
+                  } else {
+                    console.error("Request failed with status", xhrInternal.status);
+                  }
+                }
+                xhrInternal.send(formDataInternal);
+              }
+              console.log("Request successful");
+              console.log(xhr.responseText);
+              window.location.href= '/';
+            } else {
+              alert("Не удалось создать заказ")
+              console.error("Request failed with status", xhr.status);
+            }
+          };
+
+          xhr.send(formData);
+        },
+      }
+    }
+    PetiteVue.createApp({ Form }).mount()
+  </script>
+</body>
+</html>

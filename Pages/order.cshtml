@@ -1,0 +1,93 @@
+@page "{id:int}"
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заказ</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="/js/petite-vue.js"></script>
+</head>
+<body>
+  <div class="row justify-content-center mt-5">
+    <div class="col-2">
+      <a href="/order/@RouteData.Values["id"]/edit/" class="btn btn-primary mt-5 mx-auto">Редактировать заказ</a>
+      <a href="/order/@RouteData.Values["id"]/delete/" class="btn btn-primary mt-5 mx-auto">Удалить заказ</a>
+    </div>
+  </div>
+  <div class="row justify-content-center mt-5">
+    <div class="col-3" v-scope="OrdersTable()" @@vue:mounted="mounted"></div>
+  </div>
+
+  <template id="ordersTable_template">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Номер</th>
+          <th scope="col">Дата</th>
+          <th scope="col">Provider id</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-if="orderData">
+          <td>{{orderData.number}}</td>
+          <td>{{orderData.date}}</td>
+          <td>{{orderData.providerId}}</td>
+        </tr>
+      </tbody>
+    </table>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Название</th>
+          <th scope="col">Количество</th>
+          <th scope="col">Единица</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="orderitem in orderItems">
+          <td>{{orderitem.name}}</td>
+          <td>{{orderitem.quantity}}</td>
+          <td>{{orderitem.unit}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </template>
+
+  <script>
+    function OrdersTable() {
+      return {
+        $template: '#ordersTable_template',
+        loading: false,
+        orderData: null,
+        orderItems: null,
+
+        mounted() {
+          this.orderData = null
+          this.loading = true
+          const xhr=new XMLHttpRequest;xhr.onreadystatechange=()=>{
+            if(xhr.readyState===4){
+              this.loading=false;
+              this.orderData = JSON.parse(xhr.response)
+            }
+          };
+          xhr.open("GET",'/api/order/@RouteData.Values["id"]',true);
+          xhr.send("");
+          
+          const xhr2=new XMLHttpRequest;xhr2.onreadystatechange=()=>{
+            if(xhr2.readyState===4){
+              this.loading=false;
+              this.orderItems = JSON.parse(xhr2.response)
+              console.log(this.orderItems)
+            }
+          };
+          xhr2.open("GET",'/api/orderItem/?orderId=@RouteData.Values["id"]',true);
+          xhr2.send("");
+        }
+      }
+    }
+    PetiteVue.createApp({ OrdersTable }).mount()
+  </script>
+</body>
+</html>
